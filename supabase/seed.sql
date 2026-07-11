@@ -1,0 +1,34 @@
+-- ResumeForge — Seed Data (operator-supplied)
+--
+-- This file is a TEMPLATE. The operator seeds `admins` and `payment_settings`
+-- manually for their own Supabase project (see design.md > "Deployment &
+-- Configuration"). Nothing here runs automatically as part of app usage.
+--
+-- Run AFTER the schema migration (supabase/migrations/0001_initial_schema.sql).
+-- Requirements: 9.2 (payment_settings source), 10.2 (admin allow-list).
+
+-- 1) Admin allow-list ------------------------------------------------------
+--    Insert the auth.users id of each admin. Look up the id in the Supabase
+--    dashboard (Authentication > Users) or via SQL against auth.users.
+--
+-- insert into admins (user_id)
+-- values ('00000000-0000-0000-0000-000000000000')  -- replace with real UUID
+-- on conflict (user_id) do nothing;
+
+-- 2) Global payment settings ----------------------------------------------
+--    Single-row config (id = 1) providing the UPI id + note used to build the
+--    upi://pay deep link (Req 9.1, 9.2).
+--
+-- insert into payment_settings (id, upi_id, note)
+-- values (1, 'your-vpa@bank', 'ResumeForge download unlock')
+-- on conflict (id) do update
+--   set upi_id = excluded.upi_id,
+--       note   = excluded.note;
+
+-- 3) Products --------------------------------------------------------------
+--    Purchasable unlock types (Req 8.7). Example rows:
+--
+-- insert into products (name, price, unlocks_count, active)
+-- values
+--   ('resume_only', 49, 1, true),
+--   ('resume_plus_cover_letter', 79, 1, true);

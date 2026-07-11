@@ -1,0 +1,22 @@
+{
+  "name": "resume-forge",
+  "private": true,
+  "version": "0.1.0",
+  "description": "ResumeForge - client-side resume builder with AI tailoring and Chrome extension",
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "build:core": "npm run build --workspace @resume-forge/core",
+    "build:web": "npm run build --workspace @resume-forge/web",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "dev": "npm run dev --workspace @resume-forge/web"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

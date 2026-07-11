@@ -1,0 +1,105 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Reusable marketing animations.
+ *
+ * Tailwind core ships no keyframes for these motions, so we define a small,
+ * self-contained set under @layer utilities. They are used by the landing page
+ * for entrance reveals, a gently drifting hero mockup, an animated gradient
+ * wash, and soft background glow orbs.
+ *
+ * Accessibility: every animation is disabled under
+ * `prefers-reduced-motion: reduce`, and reveal utilities settle to their final
+ * (fully visible) state so nothing stays hidden for those users.
+ */
+@layer utilities {
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-12px);
+    }
+  }
+
+  @keyframes gradient-shift {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+
+  @keyframes blob {
+    0%,
+    100% {
+      transform: translate(0, 0) scale(1);
+    }
+    33% {
+      transform: translate(24px, -18px) scale(1.08);
+    }
+    66% {
+      transform: translate(-18px, 14px) scale(0.94);
+    }
+  }
+
+  .animate-fade-up {
+    animation: fade-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-gradient {
+    animation: gradient-shift 15s ease infinite;
+  }
+
+  .animate-blob {
+    animation: blob 18s ease-in-out infinite;
+  }
+
+  /* Staggered entrance delays for sequenced reveals. */
+  .anim-delay-100 {
+    animation-delay: 100ms;
+  }
+  .anim-delay-200 {
+    animation-delay: 200ms;
+  }
+  .anim-delay-300 {
+    animation-delay: 300ms;
+  }
+  .anim-delay-400 {
+    animation-delay: 400ms;
+  }
+  .anim-delay-500 {
+    animation-delay: 500ms;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-fade-up,
+    .animate-float,
+    .animate-gradient,
+    .animate-blob {
+      animation: none;
+    }
+  }
+}

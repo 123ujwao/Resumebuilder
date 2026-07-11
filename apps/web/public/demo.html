@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ResumeForge — Product Demo</title>
+<style>
+  :root{
+    --violet-600:#6D5EF3;
+    --violet-500:#7C6CF6;
+    --blue-400:#4FA8FF;
+    --ink:#181A2A;
+    --ink-soft:#5A5D72;
+    --line:#E7E7F0;
+    --paper:#FFFFFF;
+    --canvas:#F6F5FC;
+    --mint:#22C55E;
+    --amber:#E8A33D;
+    --radius:16px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    background:var(--canvas);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    min-height:100vh;
+    overflow:hidden;
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.001s !important; transition-duration:0.001s !important;}
+  }
+
+  .stage{
+    width:920px;
+    height:560px;
+    background:var(--paper);
+    border-radius:24px;
+    box-shadow:0 30px 80px -20px rgba(30,20,90,0.25), 0 0 0 1px var(--line);
+    position:relative;
+    overflow:hidden;
+  }
+
+  /* chrome bar to sell "this is the product" */
+  .chrome{
+    height:44px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:0 16px;
+    border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg,#FBFAFF,#F6F5FC);
+  }
+  .dot{width:9px;height:9px;border-radius:50%;background:#DADCE8;}
+  .chrome-brand{
+    margin-left:8px;
+    font-weight:700;
+    font-size:13px;
+    color:var(--ink);
+    letter-spacing:-0.01em;
+  }
+  .chrome-brand span{color:var(--violet-600);}
+  .chrome-url{
+    margin-left:auto;
+    font-size:11px;
+    color:var(--ink-soft);
+    background:var(--canvas);
+    padding:4px 12px;
+    border-radius:20px;
+  }
+
+  .viewport{
+    position:relative;
+    width:100%;
+    height:516px;
+  }
+
+  .scene{
+    position:absolute;
+    inset:0;
+    padding:40px 56px;
+    opacity:0;
+    transform:translateY(14px) scale(0.99);
+    transition:opacity 0.5s ease, transform 0.6s ease;
+    pointer-events:none;
+  }
+  .scene.active{
+    opacity:1;
+    transform:translateY(0) scale(1);
+    pointer-events:auto;
+  }
+
+  /* progress rail */
+  .rail{
+    position:absolute;
+    top:44px;
+    left:0;
+    right:0;
+    height:3px;
+    background:var(--line);
+    z-index:5;
+  }
+  .rail-fill{
+    height:100%;
+    width:0%;
+    background:linear-gradient(90deg,var(--violet-600),var(--blue-400));
+    transition:width 0.1s linear;
+  }
+
+  /* ---------- SCENE 1 : HERO ---------- */
+  .eyebrow{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-size:12px;
+    font-weight:600;
+    color:var(--violet-600);
+    background:#F1EFFE;
+    padding:6px 14px;
+    border-radius:20px;
+    margin-bottom:22px;
+    opacity:0;
+  }
+  .eyebrow::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--violet-600);}
+
+  .headline{
+    font-size:40px;
+    font-weight:800;
+    line-height:1.12;
+    letter-spacing:-0.02em;
+    color:var(--ink);
+    max-width:480px;
+    margin:0 0 18px 0;
+  }
+  .headline .grad{
+    background:linear-gradient(90deg,var(--violet-600),var(--blue-400));
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+  }
+  .cursor-caret{
+    display:inline-block;
+    width:3px;
+    height:34px;
+    background:var(--violet-600);
+    margin-left:2px;
+    vertical-align:-6px;
+    animation:blink 0.9s steps(1) infinite;
+  }
+  @keyframes blink{50%{opacity:0;}}
+
+  .sub{
+    font-size:15px;
+    color:var(--ink-soft);
+    max-width:400px;
+    line-height:1.6;
+    opacity:0;
+  }
+  .cta-row{margin-top:26px;display:flex;gap:12px;opacity:0;}
+  .btn{
+    font-size:14px;
+    font-weight:600;
+    padding:12px 22px;
+    border-radius:10px;
+    border:none;
+    cursor:default;
+  }
+  .btn-primary{background:var(--violet-600);color:white;box-shadow:0 8px 20px -6px rgba(109,94,243,0.55);}
+  .btn-ghost{background:transparent;color:var(--ink);border:1px solid var(--line);}
+
+  .hero-card{
+    position:absolute;
+    right:56px;
+    top:70px;
+    width:300px;
+    background:var(--paper);
+    border-radius:14px;
+    border:1px solid var(--line);
+    box-shadow:0 20px 50px -18px rgba(30,20,90,0.28);
+    padding:20px;
+    opacity:0;
+    transform:translateX(20px);
+  }
+  .hc-row{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
+  .hc-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--violet-600),var(--blue-400));}
+  .bar{height:8px;border-radius:5px;background:var(--line);}
+  .bar.dark{background:var(--ink);opacity:0.85;}
+  .bar.grad{background:linear-gradient(90deg,var(--violet-500),var(--blue-400));}
+  .hc-row .bar:first-of-type{width:60%;}
+  .stack .bar{margin-bottom:8px;}
+  .w-95{width:95%;} .w-80{width:80%;} .w-60{width:60%;} .w-40{width:40%;}
+  .pill-row{display:flex;gap:6px;margin-top:14px;}
+  .pill{height:20px;border-radius:20px;background:var(--canvas);}
+  .pill.p1{width:70px;} .pill.p2{width:58px;background:#EFEBFF;} .pill.p3{width:44px;}
+  .match-chip{
+    position:absolute;
+    bottom:-14px;
+    right:-14px;
+    background:var(--paper);
+    border-radius:12px;
+    padding:10px 14px;
+    box-shadow:0 12px 30px -10px rgba(30,20,90,0.3);
+    font-size:11px;
+    color:var(--ink-soft);
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .match-chip .num{font-size:15px;font-weight:800;color:var(--ink);}
+  .check-dot{width:16px;height:16px;border-radius:50%;background:#DCFCE7;color:var(--mint);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;}
+
+  /* ---------- SCENE 2 : DESCRIBE ---------- */
+  .s2-title{font-size:22px;font-weight:800;color:var(--ink);margin:0 0 6px;}
+  .s2-sub{font-size:13px;color:var(--ink-soft);margin:0 0 22px;}
+  .split{display:flex;gap:26px;height:390px;}
+  .col{flex:1;}
+  .textarea-mock{
+    background:var(--canvas);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:18px;
+    font-size:13px;
+    line-height:1.7;
+    color:var(--ink);
+    height:260px;
+    position:relative;
+  }
+  .typed{white-space:pre-wrap;}
+  .typed-caret{display:inline-block;width:2px;height:14px;background:var(--violet-600);margin-left:1px;animation:blink 0.9s steps(1) infinite;vertical-align:-2px;}
+  .arrow-mid{
+    display:flex;align-items:center;justify-content:center;
+    font-size:20px;color:var(--violet-600);
+  }
+  .resume-out{
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:20px;
+    height:260px;
+    box-shadow:0 14px 34px -18px rgba(30,20,90,0.2);
+  }
+  .field{opacity:0;transform:translateY(6px);transition:opacity 0.4s, transform 0.4s;margin-bottom:12px;}
+  .field.show{opacity:1;transform:translateY(0);}
+  .field .label{font-size:9px;font-weight:700;color:var(--violet-600);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:5px;}
+  .field .val{font-size:12px;color:var(--ink);line-height:1.5;}
+
+  /* ---------- SCENE 3 : TEMPLATES ---------- */
+  .s3-wrap{display:flex;gap:30px;height:420px;align-items:flex-start;}
+  .template-list{display:flex;flex-direction:column;gap:12px;width:150px;}
+  .t-item{
+    border:1.5px solid var(--line);
+    border-radius:10px;
+    padding:10px 12px;
+    font-size:12px;
+    font-weight:600;
+    color:var(--ink-soft);
+    display:flex;
+    align-items:center;
+    gap:8px;
+    transition:all 0.3s;
+  }
+  .t-item .sw{width:16px;height:16px;border-radius:4px;flex-shrink:0;}
+  .t-item.on{border-color:var(--violet-600);color:var(--violet-600);background:#F8F7FF;}
+  .preview-frame{
+    flex:1;
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:12px;
+    box-shadow:0 20px 44px -20px rgba(30,20,90,0.25);
+    padding:26px 30px;
+    height:100%;
+    position:relative;
+    overflow:hidden;
+  }
+  .pv-name{font-size:18px;font-weight:800;color:var(--ink);margin-bottom:3px;transition:all 0.4s;}
+  .pv-role{font-size:11px;color:var(--violet-600);font-weight:600;margin-bottom:16px;transition:all 0.4s;}
+  .pv-section-title{font-size:10px;font-weight:700;letter-spacing:0.08em;color:var(--ink-soft);margin:14px 0 8px;transition:all 0.4s;}
+  .pv-line{height:6px;border-radius:4px;background:var(--line);margin-bottom:7px;transition:all 0.4s;}
+
+  /* template skins */
+  .skin-classic .pv-name{font-family:Georgia,serif;color:#1a1a2e;}
+  .skin-classic .pv-role{color:#555;}
+  .skin-classic .pv-section-title{border-bottom:1px solid var(--line);padding-bottom:4px;}
+
+  .skin-modern .pv-name{color:var(--violet-600);}
+  .skin-modern .pv-line{background:linear-gradient(90deg,#EFEBFF,var(--line));}
+
+  .skin-minimal .pv-name{font-weight:300;font-size:20px;letter-spacing:0.02em;}
+  .skin-minimal .pv-line{background:#F1F1F1;height:5px;}
+
+  /* ---------- SCENE 4 : TAILORING ---------- */
+  .s4-wrap{display:flex;gap:30px;}
+  .jd-box{
+    flex:1;
+    background:var(--canvas);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:18px;
+    font-size:12px;
+    color:var(--ink-soft);
+    line-height:1.7;
+    height:340px;
+  }
+  .jd-box .tag{display:inline-block;font-size:10px;font-weight:700;color:var(--violet-600);background:#F1EFFE;padding:3px 8px;border-radius:6px;margin-bottom:10px;}
+  .analysis-box{
+    flex:1;
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:20px;
+    box-shadow:0 20px 44px -20px rgba(30,20,90,0.25);
+    height:340px;
+  }
+  .an-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+  .an-head .t{font-size:12px;font-weight:700;color:var(--ink);}
+  .score-chip{font-size:11px;font-weight:800;color:var(--mint);background:#DCFCE7;padding:4px 10px;border-radius:20px;}
+  .progress-track{height:7px;background:var(--line);border-radius:5px;overflow:hidden;margin-bottom:20px;}
+  .progress-bar{height:100%;width:0%;background:linear-gradient(90deg,var(--violet-600),var(--mint));transition:width 1.4s cubic-bezier(.22,.9,.3,1);}
+  .list-label{font-size:9px;font-weight:700;letter-spacing:0.08em;color:var(--ink-soft);margin:14px 0 8px;}
+  .check-item,.gap-item{
+    display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink);
+    margin-bottom:9px;opacity:0;transform:translateX(-8px);
+    transition:opacity 0.35s, transform 0.35s;
+  }
+  .check-item.show,.gap-item.show{opacity:1;transform:translateX(0);}
+  .ic{width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;flex-shrink:0;}
+  .ic.good{background:#DCFCE7;color:var(--mint);}
+  .ic.warn{background:#FBEFD9;color:var(--amber);}
+
+  /* ---------- SCENE 5 : DOWNLOAD ---------- */
+  .s5-center{
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    height:100%;text-align:center;
+  }
+  .doc-stack{position:relative;width:180px;height:150px;margin-bottom:28px;}
+  .doc{
+    position:absolute;
+    width:110px;height:140px;
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:10px;
+    box-shadow:0 16px 34px -16px rgba(30,20,90,0.3);
+    padding:14px;
+    transition:transform 0.6s cubic-bezier(.22,.9,.3,1), opacity 0.6s;
+  }
+  .doc-pdf{left:6px;transform:rotate(-8deg) translateY(6px);}
+  .doc-docx{left:64px;transform:rotate(8deg) translateY(6px);}
+  .doc .tag2{
+    font-size:9px;font-weight:800;color:white;
+    padding:3px 6px;border-radius:4px;display:inline-block;margin-bottom:10px;
+  }
+  .doc-pdf .tag2{background:#E0524B;}
+  .doc-docx .tag2{background:#2C5DE5;}
+  .doc.launch{transform:translateY(-30px) scale(1.04);opacity:0;}
+
+  .s5-title{font-size:18px;font-weight:800;color:var(--ink);margin:0 0 6px;}
+  .s5-sub{font-size:13px;color:var(--ink-soft);margin:0 0 20px;}
+  .check-burst{
+    width:46px;height:46px;border-radius:50%;
+    background:#DCFCE7;color:var(--mint);
+    display:flex;align-items:center;justify-content:center;
+    font-size:22px;font-weight:800;
+    transform:scale(0);
+    transition:transform 0.5s cubic-bezier(.34,1.56,.64,1);
+    margin-bottom:14px;
+  }
+  .check-burst.pop{transform:scale(1);}
+
+  /* dots nav */
+  .navdots{
+    position:absolute;
+    bottom:18px;
+    left:0;right:0;
+    display:flex;
+    justify-content:center;
+    gap:7px;
+    z-index:6;
+  }
+  .navdots .d{width:6px;height:6px;border-radius:50%;background:var(--line);transition:all 0.3s;}
+  .navdots .d.on{width:20px;background:var(--violet-600);}
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <div class="chrome">
+    <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+    <div class="chrome-brand">Resume<span>Forge</span></div>
+    <div class="chrome-url">resumeforge.app</div>
+  </div>
+  <div class="rail"><div class="rail-fill" id="railFill"></div></div>
+
+  <div class="viewport">
+
+    <!-- SCENE 1: HERO -->
+    <div class="scene" data-scene="0">
+      <div class="eyebrow" id="s1-eyebrow">AI resume builder for job seekers</div>
+      <h1 class="headline" id="s1-headline"></h1>
+      <p class="sub" id="s1-sub">Just describe your experience in plain English. ResumeForge turns it into a polished, ATS-ready resume you can tailor to any job.</p>
+      <div class="cta-row" id="s1-cta">
+        <button class="btn btn-primary">Build my resume free</button>
+        <button class="btn btn-ghost">See how it works</button>
+      </div>
+
+      <div class="hero-card" id="s1-card">
+        <div class="hc-row">
+          <div class="hc-avatar"></div>
+          <div style="flex:1"><div class="bar dark"></div></div>
+        </div>
+        <div class="stack">
+          <div class="bar grad w-40" style="height:9px;"></div>
+          <div class="bar w-95"></div>
+          <div class="bar w-80"></div>
+          <div class="bar grad w-40" style="height:9px;margin-top:12px;"></div>
+          <div class="bar w-60"></div>
+        </div>
+        <div class="pill-row">
+          <div class="pill p1"></div><div class="pill p2"></div><div class="pill p3"></div>
+        </div>
+        <div class="match-chip">
+          <div class="check-dot">&#10003;</div>
+          <div>Match score<br><span class="num">92%</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENE 2: DESCRIBE IT -->
+    <div class="scene" data-scene="1">
+      <h2 class="s2-title">Describe it, don't format it</h2>
+      <p class="s2-sub">Write your background in plain English. AI structures it into a clean resume.</p>
+      <div class="split">
+        <div class="col">
+          <div class="textarea-mock">
+            <span class="typed" id="s2-typed"></span><span class="typed-caret"></span>
+          </div>
+        </div>
+        <div class="arrow-mid">&#8594;</div>
+        <div class="col">
+          <div class="resume-out">
+            <div class="field" id="f1"><div class="label">Summary</div><div class="val">Frontend engineer with 3 years building React &amp; TypeScript products.</div></div>
+            <div class="field" id="f2"><div class="label">Experience</div><div class="val">Frontend Engineer &mdash; Nimbus Labs<br>Led a 4-person team shipping CI/CD pipelines.</div></div>
+            <div class="field" id="f3"><div class="label">Skills</div><div class="val">React &middot; TypeScript &middot; CI/CD &middot; Team leadership</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENE 3: TEMPLATES -->
+    <div class="scene" data-scene="2">
+      <h2 class="s2-title">5 ATS-friendly templates</h2>
+      <p class="s2-sub">Switch templates live and personalize fonts and accent colors.</p>
+      <div class="s3-wrap">
+        <div class="template-list">
+          <div class="t-item on" id="t-classic"><div class="sw" style="background:#1a1a2e;"></div>Classic</div>
+          <div class="t-item" id="t-modern"><div class="sw" style="background:linear-gradient(135deg,var(--violet-600),var(--blue-400));"></div>Modern</div>
+          <div class="t-item" id="t-minimal"><div class="sw" style="background:#111;"></div>Minimal</div>
+          <div class="t-item" style="opacity:0.5;"><div class="sw" style="background:#999;"></div>Compact</div>
+          <div class="t-item" style="opacity:0.5;"><div class="sw" style="background:#999;"></div>Two-column</div>
+        </div>
+        <div class="preview-frame skin-classic" id="previewFrame">
+          <div class="pv-name">Aditi Rao</div>
+          <div class="pv-role">Frontend Engineer</div>
+          <div class="pv-section-title">EXPERIENCE</div>
+          <div class="pv-line" style="width:88%;"></div>
+          <div class="pv-line" style="width:72%;"></div>
+          <div class="pv-line" style="width:80%;"></div>
+          <div class="pv-section-title">SKILLS</div>
+          <div class="pv-line" style="width:55%;"></div>
+          <div class="pv-line" style="width:40%;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENE 4: TAILORING -->
+    <div class="scene" data-scene="3">
+      <h2 class="s2-title">Match every job &mdash; without lying on your resume</h2>
+      <p class="s2-sub">Paste a job description and see your match score, instantly.</p>
+      <div class="s4-wrap">
+        <div class="jd-box">
+          <span class="tag">JOB DESCRIPTION</span><br><br>
+          Looking for a Frontend Engineer with strong React &amp; TypeScript skills, experience leading small teams, and familiarity with CI/CD pipelines. Kubernetes experience and mentoring metrics a plus.
+        </div>
+        <div class="analysis-box">
+          <div class="an-head"><span class="t">Match analysis</span><span class="score-chip" id="scoreChip">0% match</span></div>
+          <div class="progress-track"><div class="progress-bar" id="progBar"></div></div>
+          <div class="list-label">COVERED</div>
+          <div class="check-item" id="c1"><div class="ic good">&#10003;</div>React &amp; TypeScript</div>
+          <div class="check-item" id="c2"><div class="ic good">&#10003;</div>Team leadership</div>
+          <div class="check-item" id="c3"><div class="ic good">&#10003;</div>CI/CD pipelines</div>
+          <div class="list-label">GAPS TO CONSIDER</div>
+          <div class="gap-item" id="g1"><div class="ic warn">!</div>Kubernetes experience</div>
+          <div class="gap-item" id="g2"><div class="ic warn">!</div>Mentoring metrics</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCENE 5: DOWNLOAD -->
+    <div class="scene" data-scene="4">
+      <div class="s5-center">
+        <div class="doc-stack">
+          <div class="doc doc-pdf" id="docPdf"><span class="tag2">PDF</span><div class="bar dark w-80" style="margin-bottom:8px;"></div><div class="bar w-95"></div><div class="bar w-60"></div></div>
+          <div class="doc doc-docx" id="docDocx"><span class="tag2">DOCX</span><div class="bar dark w-80" style="margin-bottom:8px;"></div><div class="bar w-95"></div><div class="bar w-60"></div></div>
+        </div>
+        <div class="check-burst" id="checkBurst">&#10003;</div>
+        <div class="s5-title" id="s5-title">Export to PDF &amp; DOCX</div>
+        <div class="s5-sub">Pixel-perfect, selectable text &mdash; ready to send.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="navdots">
+    <div class="d" data-dot="0"></div>
+    <div class="d" data-dot="1"></div>
+    <div class="d" data-dot="2"></div>
+    <div class="d" data-dot="3"></div>
+    <div class="d" data-dot="4"></div>
+  </div>
+</div>
+
+<script>
+const scenes = document.querySelectorAll('.scene');
+const dots = document.querySelectorAll('.navdots .d');
+const railFill = document.getElementById('railFill');
+let current = 0;
+const SCENE_DURATIONS = [5200, 5600, 5200, 6200, 4800]; // ms per scene
+
+function typeText(el, text, speed, done){
+  let i = 0;
+  el.textContent = '';
+  const timer = setInterval(function(){
+    el.textContent += text[i];
+    i++;
+    if(i >= text.length){ clearInterval(timer); if(done) done(); }
+  }, speed);
+}
+
+function runScene1(){
+  const eyebrow = document.getElementById('s1-eyebrow');
+  const headline = document.getElementById('s1-headline');
+  const sub = document.getElementById('s1-sub');
+  const cta = document.getElementById('s1-cta');
+  const card = document.getElementById('s1-card');
+  eyebrow.style.transition='opacity .5s'; eyebrow.style.opacity='0';
+  headline.textContent=''; sub.style.opacity='0'; cta.style.opacity='0';
+  card.style.opacity='0'; card.style.transform='translateX(20px)';
+
+  setTimeout(function(){ eyebrow.style.opacity='1'; }, 150);
+  setTimeout(function(){
+    headline.innerHTML = 'Build a job-<br>winning resume in <span class="grad">minutes</span><span class="cursor-caret"></span>';
+    headline.style.opacity=1;
+  }, 500);
+  setTimeout(function(){ sub.style.transition='opacity .5s'; sub.style.opacity='1'; }, 1700);
+  setTimeout(function(){ cta.style.transition='opacity .5s'; cta.style.opacity='1'; }, 2100);
+  setTimeout(function(){ card.style.transition='opacity .6s, transform .6s'; card.style.opacity='1'; card.style.transform='translateX(0)'; }, 900);
+}
+
+function runScene2(){
+  const typed = document.getElementById('s2-typed');
+  const fields = [document.getElementById('f1'),document.getElementById('f2'),document.getElementById('f3')];
+  fields.forEach(function(f){f.classList.remove('show');});
+  const text = "I've spent the last 3 years as a frontend engineer at Nimbus Labs, mostly working with React and TypeScript. Led a small team of 4 and set up our CI/CD pipelines...";
+  typeText(typed, text, 28, function(){
+    setTimeout(function(){fields[0].classList.add('show');}, 300);
+    setTimeout(function(){fields[1].classList.add('show');}, 800);
+    setTimeout(function(){fields[2].classList.add('show');}, 1300);
+  });
+}
+
+function runScene3(){
+  const items = {classic:document.getElementById('t-classic'), modern:document.getElementById('t-modern'), minimal:document.getElementById('t-minimal')};
+  const frame = document.getElementById('previewFrame');
+  function setSkin(name){
+    Object.values(items).forEach(function(i){i.classList.remove('on');});
+    items[name].classList.add('on');
+    frame.classList.remove('skin-classic','skin-modern','skin-minimal');
+    frame.classList.add('skin-'+name);
+  }
+  setSkin('classic');
+  setTimeout(function(){setSkin('modern');}, 1900);
+  setTimeout(function(){setSkin('minimal');}, 3800);
+}
+
+function runScene4(){
+  const scoreChip = document.getElementById('scoreChip');
+  const progBar = document.getElementById('progBar');
+  const c = [document.getElementById('c1'),document.getElementById('c2'),document.getElementById('c3')];
+  const g = [document.getElementById('g1'),document.getElementById('g2')];
+  c.concat(g).forEach(function(x){x.classList.remove('show');});
+  progBar.style.width='0%'; scoreChip.textContent='0% match';
+  setTimeout(function(){
+    progBar.style.width='92%';
+    let val=0;
+    const t=setInterval(function(){
+      val+=4; if(val>=92){val=92;clearInterval(t);}
+      scoreChip.textContent=val+'% match';
+    },40);
+  }, 500);
+  setTimeout(function(){c[0].classList.add('show');}, 1400);
+  setTimeout(function(){c[1].classList.add('show');}, 1750);
+  setTimeout(function(){c[2].classList.add('show');}, 2100);
+  setTimeout(function(){g[0].classList.add('show');}, 2600);
+  setTimeout(function(){g[1].classList.add('show');}, 2950);
+}
+
+function runScene5(){
+  const pdf = document.getElementById('docPdf');
+  const docx = document.getElementById('docDocx');
+  const burst = document.getElementById('checkBurst');
+  pdf.classList.remove('launch'); docx.classList.remove('launch'); burst.classList.remove('pop');
+  setTimeout(function(){ pdf.classList.add('launch'); }, 1600);
+  setTimeout(function(){ docx.classList.add('launch'); }, 1850);
+  setTimeout(function(){ burst.classList.add('pop'); }, 2200);
+}
+
+const runners = [runScene1, runScene2, runScene3, runScene4, runScene5];
+
+function showScene(idx){
+  scenes.forEach(function(s){s.classList.remove('active');});
+  dots.forEach(function(d){d.classList.remove('on');});
+  document.querySelector('.scene[data-scene="'+idx+'"]').classList.add('active');
+  document.querySelector('.navdots .d[data-dot="'+idx+'"]').classList.add('on');
+  runners[idx]();
+  animateRail(SCENE_DURATIONS[idx]);
+}
+
+function animateRail(duration){
+  railFill.style.transition='none';
+  railFill.style.width='0%';
+  requestAnimationFrame(function(){
+    railFill.style.transition='width '+duration+'ms linear';
+    railFill.style.width='100%';
+  });
+}
+
+function loop(){
+  showScene(current);
+  setTimeout(function(){
+    current = (current+1) % scenes.length;
+    loop();
+  }, SCENE_DURATIONS[current]);
+}
+
+loop();
+</script>
+
+</body>
+</html>
