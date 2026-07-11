@@ -1,5 +1,5 @@
 {
-  "buildCommand": "npm run build:core && npm run build:web",
+  "buildCommand": "npm run build --workspace @resume-forge/core && npm run build --workspace @resume-forge/web",
   "installCommand": "npm install",
   "outputDirectory": "apps/web/dist",
   "framework": "vite",
