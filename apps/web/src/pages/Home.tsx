@@ -75,7 +75,7 @@ export function Home() {
           </section>
           <section
             aria-label="Live preview"
-            className="lg:sticky lg:top-8 lg:h-[calc(100vh-6rem)]"
+            className="lg:sticky lg:top-8 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto lg:pr-1"
           >
             <LivePreview />
             <div className="mt-4 rounded-lg border border-slate-200 bg-white p-4">
